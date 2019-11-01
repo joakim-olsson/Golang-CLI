@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strconv"
@@ -14,21 +15,86 @@ func main() {
 	for {
 		fmt.Print("> ")
 		cmdString, err:= reader.ReadString('\n')
+		if len(cmdString) > 2 {
+			runCommand(cmdString)
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Something went wrong")
 		}
-		runCommand(cmdString)
 	}
 }
 
 func sum(nums []string) int {
-	sum := 0
+	res := 0
 	for _, n := range nums {
 		j, _ := strconv.Atoi(n)
-		sum += j
+		res += j
 	}
-	return sum
+	return res
 }
+
+func sub(nums []string) int {
+	if len(nums) < 2 {
+		main()
+	}
+
+	res, _ := strconv.Atoi(nums[1])
+	for i := 2; i < len(nums); i++ {
+	j, _ := strconv.Atoi(nums[i])
+		res -= j
+	}
+	return res
+}
+
+func mul(nums []string) int {
+	if len(nums) < 2 {
+		main()
+	}
+	res, _ := strconv.Atoi(nums[1])
+
+	for i := 2; i < len(nums); i++ {
+		j, _ := strconv.Atoi(nums[i])
+		res *= j
+	}
+	return res
+}
+
+func div(nums []string) float64 { // TODO
+	if len(nums) < 2 {
+		main()
+	}
+
+	res, _ := strconv.ParseFloat(nums[1], 64)
+	for i := 2; i < len(nums); i++ {
+		j, _ := strconv.ParseFloat(nums[i], 64)
+		res /= j
+	}
+	return res
+}
+
+func CopyFile(dstName, srcName string) (written int64, err error) {
+	src, err := os.Open(srcName)
+	if err != nil {
+		fmt.Println("Could not find source file")
+	}
+	defer src.Close()
+
+	dst, err := os.Create(dstName)
+	if err != nil {
+		fmt.Println("Could not find destination file")
+	}
+	defer dst.Close()
+
+	return io.Copy(dst, src)
+}
+
+func WriteToFile(args []string) {
+	src, err := os.Open(args[1])
+	if err != nil {
+
+	}
+}
+
 func runCommand(commandStr string) error {
 	commandStr = strings.TrimSuffix(commandStr, "\n")
 	arrCommandStr := strings.Fields(commandStr)
@@ -37,6 +103,16 @@ func runCommand(commandStr string) error {
 		os.Exit(0)
 	case "add":
 		fmt.Println(sum(arrCommandStr))
+	case "sub":
+		fmt.Println(sub(arrCommandStr))
+	case "mul":
+		fmt.Println(mul(arrCommandStr))
+	case "div":
+		fmt.Println(div(arrCommandStr))
+	case "copy":
+		CopyFile(arrCommandStr[1], arrCommandStr[2])
+	case "write":
+		WriteToFile(arrCommandStr)
 	}
 	cmd := exec.Command(arrCommandStr[0])
 	cmd.Stderr = os.Stderr
