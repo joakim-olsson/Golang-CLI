@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -89,10 +90,16 @@ func CopyFile(dstName, srcName string) (written int64, err error) {
 }
 
 func WriteToFile(args []string) {
-	src, err := os.Open(args[1])
+	fileName := args[1]
+	src, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
-
+		log.Fatal(err)
 	}
+	defer src.Close()
+	for i := 2; i < len(args); i++ {
+		src.WriteString(args[i] + " ")
+	}
+	fmt.Printf("Wrote %d words to file \n", len(args)-2)
 }
 
 func runCommand(commandStr string) error {
